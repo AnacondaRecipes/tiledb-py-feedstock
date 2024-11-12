@@ -1,6 +1,5 @@
 {% set name = "tiledb" %}
-{% set version = "0.32.2" %}
-{% set sha256 = "359599ecab0e46b5c8f8ad9ca8eef635ab2c94eb9dcf40767c4fef793b1810f4" %}
+{% set version = "0.32.5" %}
 
 package:
   name: tiledb-py
@@ -9,32 +8,30 @@ package:
 source:
   fn: {{ name }}-{{ version }}.tar.gz
   url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: {{ sha256 }}
+  sha256: faa507115731742e4eb0fbfec7be41310efcc46523afc188440b2d26ed48d361
 
 build:
   number: 0
+  skip: True  # [py<39]
+  ignore_run_exports:
+    - numpy
+
 requirements:
   build:
+    - pybind11
+    - cmake >=3.15
     - {{ compiler('cxx') }}
-    - {{ stdlib("c") }}
-    - python                                 # [build_platform != target_platform]
-    - cross-python_{{ target_platform }}     # [build_platform != target_platform]
-    - cython >=3.0                            # [build_platform != target_platform]
-    - numpy                                  # [build_platform != target_platform]
-    - pybind11                               # [build_platform != target_platform]
-    - cmake
-    - make
   host:
     - pip
     - wheel
     - setuptools
-    - setuptools_scm
+    - setuptools-scm
     - scikit-build-core
     - python
-    - cython >=3.0
-    - numpy
+    - cython >=3
+    - numpy >=2.0.1
     - pybind11
-    - tiledb >=2.26.0,<2.27
+    - tiledb >=2.26
   run:
     - python
     - packaging
@@ -53,7 +50,7 @@ test:
     - tiledb/tests/
   commands:
     - python -c "import tiledb; tiledb.libtiledb.version()"
-    - python -c "import tiledb; assert tiledb.VFS().supports('s3')"
+    - python -c "import tiledb; assert not tiledb.VFS().supports('s3')" # we don't support s3
     - pytest -v --ignore-glob='*_examples.py' --ignore-glob='*_dask.py'
 {% endif %}
 
