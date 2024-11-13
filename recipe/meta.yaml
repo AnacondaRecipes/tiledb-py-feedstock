@@ -12,11 +12,10 @@ source:
 
 build:
   number: 0
-  skip: True  # [py<39]
+  # Windows skip is due to snowflake only build of tiledb 2.26.2
+  skip: True  # [py<39 or s390x or win]
   ignore_run_exports:
     - numpy
-  missing_dso_whitelist:  # [s390x]
-    - $RPATH/ld64.so.1    # [s390x]
 
 requirements:
   build:
@@ -56,7 +55,7 @@ test:
   commands:
     - pip check
     - python -c "import tiledb; tiledb.libtiledb.version()"
-    - python -c "import tiledb; assert not tiledb.VFS().supports('s3')" # we don't support s3
+    - python -c "import tiledb; assert not tiledb.VFS().supports('s3')" # we don't support backends in this build
     - pytest -v --ignore-glob='*_examples.py' --ignore-glob='*_dask.py'
 {% endif %}
 
