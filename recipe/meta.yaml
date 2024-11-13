@@ -37,6 +37,7 @@ requirements:
   run:
     - python
     - packaging
+    - numpy >=1.25
 
 {% if python_impl != 'pypy' %}
 test:
