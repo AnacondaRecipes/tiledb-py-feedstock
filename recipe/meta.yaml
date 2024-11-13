@@ -48,6 +48,7 @@ test:
     - pandas
     - psutil
     - pip
+    - dask
   imports:
     - tiledb
   source_files:
@@ -57,7 +58,7 @@ test:
     - python -c "import tiledb; tiledb.libtiledb.version()"
     - python -c "import tiledb; assert not tiledb.VFS().supports('s3')" # we don't support backends in this build
     # test_multi_index_two_way_query - fleaky test
-    - pytest -v --ignore-glob='*_examples.py' --ignore-glob='*_dask.py' -k 'not test_multi_index_two_way_query'
+    - pytest -v --ignore-glob='*_examples.py' -k 'not test_multi_index_two_way_query'
 {% endif %}
 
 about:
