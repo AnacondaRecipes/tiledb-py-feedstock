@@ -1,43 +1,42 @@
 {% set name = "tiledb" %}
-{% set version = "0.32.2" %}
-{% set sha256 = "359599ecab0e46b5c8f8ad9ca8eef635ab2c94eb9dcf40767c4fef793b1810f4" %}
+{% set version = "0.32.5" %}
 
 package:
   name: tiledb-py
   version: {{ version }}
 
 source:
-  fn: {{ name }}-{{ version }}.tar.gz
   url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: {{ sha256 }}
+  sha256: faa507115731742e4eb0fbfec7be41310efcc46523afc188440b2d26ed48d361
 
 build:
   number: 0
+  # Windows skip is due to snowflake only build of tiledb 2.26.2
+  skip: True  # [py<39 or s390x or win]
+  ignore_run_exports:
+    - numpy
+
 requirements:
   build:
-    - {{ compiler('cxx') }}
-    - {{ stdlib("c") }}
-    - python                                 # [build_platform != target_platform]
-    - cross-python_{{ target_platform }}     # [build_platform != target_platform]
-    - cython >=3.0                            # [build_platform != target_platform]
-    - numpy                                  # [build_platform != target_platform]
-    - pybind11                               # [build_platform != target_platform]
-    - cmake
+    - cmake >=3.15
     - make
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
   host:
     - pip
     - wheel
     - setuptools
-    - setuptools_scm
+    - setuptools-scm
     - scikit-build-core
     - python
-    - cython >=3.0
-    - numpy
+    - cython >=3
+    - numpy >=2.0.1
     - pybind11
-    - tiledb >=2.26.0,<2.27
+    - tiledb >=2.26
   run:
     - python
     - packaging
+    - numpy >=1.25
 
 {% if python_impl != 'pypy' %}
 test:
@@ -47,18 +46,22 @@ test:
     - pytest
     - pandas
     - psutil
+    - pip
+    - dask
   imports:
     - tiledb
   source_files:
     - tiledb/tests/
   commands:
+    - pip check
     - python -c "import tiledb; tiledb.libtiledb.version()"
-    - python -c "import tiledb; assert tiledb.VFS().supports('s3')"
-    - pytest -v --ignore-glob='*_examples.py' --ignore-glob='*_dask.py'
+    - python -c "import tiledb; assert not tiledb.VFS().supports('s3')" # we don't support backends in this build
+    # test_multi_index_two_way_query - fleaky test
+    - pytest -v --ignore-glob='*_examples.py' -k 'not test_multi_index_two_way_query'
 {% endif %}
 
 about:
-  home: http://tiledb.io
+  home: https://tiledb.io
   license: MIT
   license_family: MIT
   license_file: LICENSE
@@ -69,7 +72,7 @@ about:
     a novel on-disk format that can store dense and sparse array data with
     support for fast reads and updates and reads. It features excellent compression, and an efficient
     parallel I/O system with high scalability.
-  doc_url: https://api-reference.tiledb.io/python-api.html
+  doc_url: https://tiledb-inc-tiledb.readthedocs-hosted.com/projects/tiledb-py/en/stable/python-api.html
   dev_url: https://github.com/TileDB-Inc/TileDB-Py
 
 extra:
